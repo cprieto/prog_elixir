@@ -29,6 +29,24 @@ defmodule Issues.CLI do
     |> process
   end
 
+  def process({user, project, count}) do
+    Issues.GithubIssues.fetch(user, project)
+    |> decode_response
+    |> sort_into_descending_order
+    |> take(count)
+  end
+
+  def sort_into_descending_order(list_of_issues) do
+    list_of_issues
+    |> Enum.sort(fn i, j -> i["created_at"] >= j["created_at"] end)
+  end
+
+  def last(list, count) do
+    list
+    |> Enum.take(count)
+    |> Enum.reverse
+  end
+
   def args_to_internal_repr([user, project, count]), do: {user, project, String.to_integer(count)}
 
   def args_to_internal_repr([user, project]), do: {user, project, @default_count}
@@ -41,10 +59,6 @@ defmodule Issues.CLI do
     """
 
     System.halt(0)
-  end
-
-  def process({user, project, count}) do
-    Issues.GithubIssues.fetch(user, project) |> decode_response
   end
 
   def decode_response({:error, error}) do
