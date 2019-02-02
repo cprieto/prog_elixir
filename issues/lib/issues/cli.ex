@@ -28,7 +28,6 @@ defmodule Issues.CLI do
     )
     |> elem(1)
     |> args_to_internal_repr
-    |> process
   end
 
   def process({user, project, count}) do
