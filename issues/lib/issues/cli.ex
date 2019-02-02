@@ -1,12 +1,14 @@
 defmodule Issues.CLI do
+  import Issues.TableFormatter, only: [print_table_for_columns: 2]
+
   @default_count 4
 
   @moduledoc """
   Handle the command line parsing and dispatch to correct operations
   """
 
-  def run(args) do
-    args
+  def main(argv) do
+    argv
     |> parse_args
     |> process
   end
@@ -33,7 +35,16 @@ defmodule Issues.CLI do
     Issues.GithubIssues.fetch(user, project)
     |> decode_response
     |> sort_into_descending_order
-    |> take(count)
+    |> last(count)
+    |> print_table_for_columns(["number", "created_at", "title"])
+  end
+
+  def process(:help) do
+    IO.puts """
+    usage: issues <user> <project> [ count |#{@default_count} ]
+    """
+
+    System.halt(0)
   end
 
   def sort_into_descending_order(list_of_issues) do
@@ -52,14 +63,6 @@ defmodule Issues.CLI do
   def args_to_internal_repr([user, project]), do: {user, project, @default_count}
 
   def args_to_internal_repr(_), do: :help
-
-  def process(:help) do
-    IO.puts """
-    usage: issues <user> <project> [ count |#{@default_count} ]
-    """
-
-    System.halt(0)
-  end
 
   def decode_response({:error, error}) do
     IO.puts "Error fetching from Github: #{error["message"]}"

@@ -7,7 +7,7 @@ defmodule Issues.GithubIssues do
   def check_for_error(200), do: :ok
   def check_for_error(_), do: :error
 
-  def handle_response({_, status_code: status_code, body: body}) do
+  def handle_response({_, %{status_code: status_code, body: body}}) do
     {
       status_code |> check_for_error,
       body        |> Poison.Parser.parse!()
